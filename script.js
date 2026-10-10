@@ -1,5 +1,12 @@
 class AccountApp {
   constructor() {
+    // 💡 통신 없이 사용할 계좌 데이터 상수 정의
+    this.accountData = {
+      bankName: "국민은행",
+      accountNumber: "123-456-789012",
+      accountHolder: "유흥일"
+    };
+
     // DOM 요소 캐싱
     this.bankNameEl = document.getElementById('bankName');
     this.targetTextEl = document.getElementById('targetText');
@@ -12,18 +19,11 @@ class AccountApp {
     this.bindEvents();
   }
 
-  // 데이터 로드 및 렌더링
-  async init() {
-    try {
-      const response = await fetch('./data.json');
-      const data = await response.json();
-
-      this.bankNameEl.innerText = data.bankName;
-      this.targetTextEl.innerText = data.accountNumber;
-      this.accountHolderEl.innerText = `예금주: ${data.accountHolder}`;
-    } catch (err) {
-      console.error('계좌 정보를 불러오지 못했습니다.', err);
-    }
+  // 데이터 렌더링 (지연 시간 없음)
+  init() {
+    this.bankNameEl.innerText = this.accountData.bankName;
+    this.targetTextEl.innerText = this.accountData.accountNumber;
+    this.accountHolderEl.innerText = `예금주: ${this.accountData.accountHolder}`;
   }
 
   // 이벤트 리스너 등록
@@ -31,7 +31,7 @@ class AccountApp {
     this.copyBtn.addEventListener('click', () => this.handleCopy());
   }
 
-  // 클립보드 복사 처리
+  // 클립보드 복사 처리 (계좌번호 숫자만 복사)
   async handleCopy() {
     const textToCopy = this.targetTextEl.innerText;
 
