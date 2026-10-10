@@ -1,50 +1,90 @@
-document.getElementById('copyBtn').addEventListener('click', async () => {
-  const textToCopy = document.getElementById('targetText').innerText;
+class AccountApp {
+  constructor() {
+    // DOM 요소 캐싱
+    this.bankNameEl = document.getElementById('bankName');
+    this.targetTextEl = document.getElementById('targetText');
+    this.accountHolderEl = document.getElementById('accountHolder');
+    this.copyBtn = document.getElementById('copyBtn');
+    this.toastEl = document.getElementById('toast');
 
-  try {
-    await navigator.clipboard.writeText(textToCopy);
-    showToast();
-  } catch (err) {
-    // 보안 환경(HTTPS)이 아닐 경우를 대비한 폴백 처리
-    fallbackCopyText(textToCopy);
+    // 초기화 및 이벤트 바인딩 실행
+    this.init();
+    this.bindEvents();
   }
+
+  // 데이터 로드 및 렌더링
+  async init() {
+    try {
+      const response = await fetch('./data.json');
+      const data = await response.json();
+
+      this.bankNameEl.innerText = data.bankName;
+      this.targetTextEl.innerText = data.accountNumber;
+      this.accountHolderEl.innerText = `예금주: ${data.accountHolder}`;
+    } catch (err) {
+      console.error('계좌 정보를 불러오지 못했습니다.', err);
+    }
+  }
+
+  // 이벤트 리스너 등록
+  bindEvents() {
+    this.copyBtn.addEventListener('click', () => this.handleCopy());
+  }
+
+  // 클립보드 복사 처리
+  async handleCopy() {
+    const textToCopy = this.targetTextEl.innerText;
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      this.showToast();
+    } catch (err) {
+      this.fallbackCopyText(textToCopy);
+    }
+  }
+
+  // 보안 환경 아닐 경우 대비한 폴백 처리
+  fallbackCopyText(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.opacity = '0';
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        this.showToast();
+      } else {
+        alert('복사에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('이 브라우저에서는 복사 기능을 지원하지 않습니다.');
+    }
+
+    document.body.removeChild(textArea);
+  }
+
+  // 토스트 메시지 노출
+  showToast() {
+    this.toastEl.classList.add('show');
+    setTimeout(() => {
+      this.toastEl.classList.remove('show');
+    }, 2000);
+  }
+}
+
+// DOM이 로드되면 앱 클래스 실행
+document.addEventListener('DOMContentLoaded', () => {
+  new AccountApp();
 });
 
-function fallbackCopyText(text) {
-  const textArea = document.createElement('textarea');
-  textArea.value = text;
-  textArea.style.position = 'fixed';
-  textArea.style.top = '0';
-  textArea.style.left = '0';
-  textArea.style.opacity = '0';
-  
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-
-  try {
-    const successful = document.execCommand('copy');
-    if (successful) {
-      showToast();
-    } else {
-      alert('복사에 실패했습니다.');
-    }
-  } catch (err) {
-    alert('이 브라우저에서는 복사 기능을 지원하지 않습니다.');
-  }
-
-  document.body.removeChild(textArea);
-}
-
-function showToast() {
-  const toast = document.getElementById('toast');
-  toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 2000);
-}
-
-// 서비스 워커 등록
+// 📌 서비스 워커 등록 (클래스 외부 유지)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
