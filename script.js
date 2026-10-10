@@ -2,9 +2,9 @@ class AccountApp {
   constructor() {
     // 💡 통신 없이 사용할 계좌 데이터 상수 정의
     this.accountData = {
-      bankName: "국민은행",
-      accountNumber: "123-456-789012",
-      accountHolder: "유흥일"
+      "bankName": "농협",
+      "accountNumber": "352-9001-6141-93",
+      "accountHolder": "유주영"
     };
 
     // DOM 요소 캐싱
